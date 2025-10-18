@@ -1,0 +1,158 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chart-service
+  labels:
+    app: chart-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: chart-service
+  template:
+    metadata:
+      labels:
+        app: chart-service
+    spec:
+      containers:
+      - name: chart-service
+        image: chart-service:latest
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: chart-service-secrets
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: chart-service-secrets
+              key: DB_PORT
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: chart-service-secrets
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: chart-service-secrets
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: chart-service-secrets
+              key: DB_PASSWORD
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: chart-service-secrets
+              key: JWT_SECRET
+        - name: JWT_EXPIRES_IN
+          value: "24h"
+        - name: ALLOWED_ORIGINS
+          value: "https://yourdomain.com"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: chart-service-config
+              key: REDIS_URL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health/detailed
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chart-service
+  labels:
+    app: chart-service
+spec:
+  selector:
+    app: chart-service
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3000
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chart-service-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - api.yourdomain.com
+    secretName: chart-service-tls
+  rules:
+  - host: api.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: chart-service
+            port:
+              number: 80
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chart-service-config
+data:
+  REDIS_URL: "redis://redis-service:6379"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: chart-service-secrets
+type: Opaque
+data:
+  # Base64 encoded values - update these with your actual values
+  DB_HOST: "your-database-host"
+  DB_PORT: "5432"
+  DB_NAME: "chart-service"
+  DB_USER: "your-db-user"
+  DB_PASSWORD: "your-db-password"
+  JWT_SECRET: "your-jwt-secret-key"
