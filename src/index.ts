@@ -90,7 +90,8 @@ class App {
     this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
       explorer: true,
       customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'Chart Service API Documentation'
+      customSiteTitle: 'Chart Service API Documentation',
+      customfavIcon: '/favicon.ico'
     }));
 
     // Pass services to routes
