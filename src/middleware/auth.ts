@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Logger } from '../utils/logger';
+import { env } from '../config/env';
 
 const logger = new Logger();
 
@@ -11,18 +12,8 @@ export const authenticateApiKey = async (
 ): Promise<void> => {
   try {
     const apiKey = req.header('x-api-key');
-    const expectedApiKey = process.env.API_KEY;
 
-    if (!expectedApiKey) {
-      logger.error('API_KEY not configured in environment');
-      res.status(500).json({
-        success: false,
-        error: 'Server configuration error'
-      });
-      return;
-    }
-
-    if (!apiKey || apiKey !== expectedApiKey) {
+    if (!apiKey || apiKey !== env.API_KEY) {
       res.status(401).json({
         success: false,
         error: 'Invalid or missing API key'
