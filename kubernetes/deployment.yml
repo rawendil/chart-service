@@ -50,13 +50,11 @@ spec:
             secretKeyRef:
               name: chart-service-secrets
               key: DB_PASSWORD
-        - name: JWT_SECRET
+        - name: API_KEY
           valueFrom:
             secretKeyRef:
               name: chart-service-secrets
-              key: JWT_SECRET
-        - name: JWT_EXPIRES_IN
-          value: "24h"
+              key: API_KEY
         - name: ALLOWED_ORIGINS
           value: "https://yourdomain.com"
         - name: LOG_LEVEL
@@ -155,4 +153,4 @@ data:
   DB_NAME: "chart-service"
   DB_USER: "your-db-user"
   DB_PASSWORD: "your-db-password"
-  JWT_SECRET: "your-jwt-secret-key"
+  API_KEY: "change-me-in-production-min-16-chars"
