@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Logger } from '../utils/logger';
+import { env } from '../config/env';
 
 const logger = new Logger();
 
@@ -44,20 +45,9 @@ export const errorHandler = (
     error = { ...error, message, statusCode: 400 };
   }
 
-  // JWT errors
-  if (err.name === 'JsonWebTokenError') {
-    const message = 'Not authorized, invalid token';
-    error = { ...error, message, statusCode: 401 };
-  }
-
-  if (err.name === 'TokenExpiredError') {
-    const message = 'Not authorized, token expired';
-    error = { ...error, message, statusCode: 401 };
-  }
-
   res.status(error.statusCode || 500).json({
     success: false,
     error: error.message || 'Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    ...(env.NODE_ENV === 'development' && { stack: err.stack })
   });
 };
