@@ -1,7 +1,7 @@
 # License
 
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
-# Chart Service
+# RawChart
 
 A high-performance microservice for generating, storing, and serving interactive charts using Chart.js and Node.js.
 
@@ -36,7 +36,7 @@ A high-performance microservice for generating, storing, and serving interactive
 
     ```bash
     git clone <repository-url>
-    cd chart-service
+    cd rawchart-service
     ```
 
 2. Start all services:
@@ -49,7 +49,7 @@ This will start:
 
 - PostgreSQL database on port 5433
 - Redis cache on port 6380
-- Chart Service API on port 3000
+- RawChart API on port 3000
 
 ### Manual Installation
 
@@ -70,7 +70,7 @@ This will start:
 
     ```bash
     # Using Docker
-    docker run -d --name postgres -e POSTGRES_DB=chart_service -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -p 5433:5432 postgres:15-alpine
+    docker run -d --name postgres -e POSTGRES_DB=rawchart_service -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -p 5433:5432 postgres:15-alpine
 
     docker run -d --name redis -p 6380:6379 redis:7-alpine
     ```
@@ -138,7 +138,7 @@ Key environment variables (see `.env.example` for complete list):
 ### Build Docker Image
 
 ```bash
-docker build -t chart-service .
+docker build -t rawchart-service .
 ```
 
 ### Run with Docker
@@ -147,7 +147,7 @@ docker build -t chart-service .
 docker run -p 3000:3000 \
   -e DB_HOST=your-db-host \
   -e DB_PASSWORD=your-db-password \
-  chart-service
+  rawchart-service
 ```
 
 ### Using Docker Compose
