@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { Logger } from '../utils/logger';
+import { env } from '../config/env';
 
 export class DatabaseService {
   private pool: Pool;
@@ -8,14 +9,14 @@ export class DatabaseService {
   constructor() {
     this.logger = new Logger();
     this.pool = new Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      database: process.env.DB_NAME || 'chart_service',
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
-      max: parseInt(process.env.DB_POOL_MAX || '20'),
-      idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000'),
-      connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '2000'),
+      host: env.DB_HOST,
+      port: env.DB_PORT,
+      database: env.DB_NAME,
+      user: env.DB_USER,
+      password: env.DB_PASSWORD,
+      max: env.DB_POOL_MAX,
+      idleTimeoutMillis: env.DB_IDLE_TIMEOUT,
+      connectionTimeoutMillis: env.DB_CONNECTION_TIMEOUT,
     });
 
     this.pool.on('error', (err) => {
