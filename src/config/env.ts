@@ -1,0 +1,45 @@
+import 'dotenv/config';
+import { z } from 'zod';
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.coerce.number().int().positive().default(3000),
+  HOST: z.string().default('localhost'),
+  ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
+
+  DB_HOST: z.string().min(1),
+  DB_PORT: z.coerce.number().int().positive().default(5432),
+  DB_NAME: z.string().min(1),
+  DB_USER: z.string().min(1),
+  DB_PASSWORD: z.string().min(1),
+  DB_POOL_MAX: z.coerce.number().int().positive().default(20),
+  DB_IDLE_TIMEOUT: z.coerce.number().int().nonnegative().default(30000),
+  DB_CONNECTION_TIMEOUT: z.coerce.number().int().positive().default(2000),
+
+  API_KEY: z.string().min(16, 'API_KEY must be at least 16 characters'),
+
+  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'verbose', 'debug']).default('info'),
+
+  REDIS_URL: z
+    .union([z.string().url(), z.literal('')])
+    .optional()
+    .transform((v) => (v ? v : undefined)),
+
+  CHROMIUM_PATH: z.string().default('/usr/bin/chromium-browser'),
+
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900000),
+  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(100),
+});
+
+const parsed = envSchema.safeParse(process.env);
+
+if (!parsed.success) {
+  console.error('Invalid environment variables:');
+  for (const issue of parsed.error.issues) {
+    console.error(`  ${issue.path.join('.')}: ${issue.message}`);
+  }
+  process.exit(1);
+}
+
+export const env = parsed.data;
+export type Env = z.infer<typeof envSchema>;
