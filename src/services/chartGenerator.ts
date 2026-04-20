@@ -3,6 +3,7 @@ import { ChartType, ChartData, ChartConfiguration } from 'chart.js';
 import { Logger } from '../utils/logger';
 import { ChartType as CustomChartType, Theme } from '../types/database';
 import { RedisService } from './redis';
+import { env } from '../config/env';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -94,7 +95,7 @@ export class ChartGeneratorService {
       // Launch browser with path to Chromium in Alpine
       browser = await puppeteer.launch({
         headless: 'new',
-        executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium-browser',
+        executablePath: env.CHROMIUM_PATH,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
