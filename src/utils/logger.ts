@@ -1,11 +1,12 @@
 import winston from 'winston';
+import { env } from '../config/env';
 
 export class Logger {
   private logger: winston.Logger;
 
   constructor() {
     this.logger = winston.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
+      level: env.LOG_LEVEL,
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.errors({ stack: true }),
@@ -24,7 +25,7 @@ export class Logger {
     });
 
     // Add console transport in development
-    if (process.env.NODE_ENV !== 'production') {
+    if (env.NODE_ENV !== 'production') {
       this.logger.add(
         new winston.transports.Console({
           format: winston.format.combine(
