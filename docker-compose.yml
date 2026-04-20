@@ -2,10 +2,10 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: chart-service-db
+    container_name: rawchart-service-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: chart_service
+      POSTGRES_DB: rawchart_service
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
@@ -13,32 +13,32 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "chart_service"]
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "rawchart_service" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Redis for caching (optional)
+  # Redis for caching
   redis:
     image: redis:7-alpine
-    container_name: chart-service-redis
+    container_name: rawchart-service-redis
     restart: unless-stopped
     ports:
       - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Chart Service Application
+  # RawChart Application
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: chart-service-app
+    container_name: rawchart-service-app
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -48,7 +48,7 @@ services:
       HOST: localhost
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: chart_service
+      DB_NAME: rawchart_service
       DB_USER: postgres
       DB_PASSWORD: password
       API_KEY: change-me-in-production-min-16-chars
@@ -80,4 +80,4 @@ volumes:
 
 networks:
   default:
-    name: chart-service-network
+    name: rawchart-service-network
