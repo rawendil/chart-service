@@ -13,10 +13,21 @@
     return;
   }
 
-  // Get chart data from global variables
-  const chartData = window.chartData;
-  const chartType = window.chartType;
-  const theme = window.chartTheme;
+  // Prefer DOM-sourced inputs (new, safe). Fall back to window globals so
+  // the page keeps working during the rollout.
+  const payloadEl = document.getElementById('chart-payload');
+  const container = document.querySelector('.chart-container');
+
+  let chartData;
+  try {
+    chartData = payloadEl ? JSON.parse(payloadEl.textContent) : window.chartData;
+  } catch (e) {
+    console.error('Failed to parse chart payload', e);
+    return;
+  }
+
+  const chartType = (container && container.dataset.chartType) || window.chartType;
+  const theme = (container && container.dataset.chartTheme) || window.chartTheme;
 
   if (!chartData || !chartType) {
     console.error('Chart data or type not provided');
