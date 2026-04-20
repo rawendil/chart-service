@@ -77,9 +77,6 @@ coverage/
 # Docker
 .dockerignore
 
-# Kubernetes
-kubernetes/.kubectl-cache/
-
 # Cache directories
 .cache/
 .parcel-cache/
