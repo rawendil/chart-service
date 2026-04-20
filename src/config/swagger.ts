@@ -4,7 +4,7 @@ import { env } from './env';
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: 'Chart Service API',
+    title: 'RawChart API',
     version: '1.0.0',
     description: 'A microservice for generating, storing, and serving interactive charts',
   },
