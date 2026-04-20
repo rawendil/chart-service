@@ -1,6 +1,3 @@
-# Podman compatible .dockerignore file
-# Podman uses the same build context as Docker, so this file works for both
-
 node_modules
 npm-debug.log*
 yarn-debug.log*

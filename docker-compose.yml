@@ -37,7 +37,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Containerfile
+      dockerfile: Dockerfile
     container_name: chart-service-app
     restart: unless-stopped
     ports:
