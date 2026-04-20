@@ -424,10 +424,10 @@ router.get('/:hash/embed', async (req: Request, res: Response): Promise<void> =>
 
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 'public, max-age=3600');
-    // Intentionally keep 'unsafe-inline' for script-src in this commit so
-    // /embed continues to work if any cached/old client JS is in flight.
-    // Tightened in the next chunk.
-    res.setHeader('Content-Security-Policy', "script-src 'self' 'unsafe-inline'");
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors *"
+    );
     res.send(embedHtml);
   } catch (error) {
     logger.error('Failed to generate embed page', error);
