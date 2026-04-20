@@ -1,10 +1,10 @@
+import { env } from './config/env';
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 
@@ -43,7 +43,6 @@ class App {
   }
 
   private initializeConfig(): void {
-    dotenv.config();
     this.logger.info('Configuration loaded');
   }
 
@@ -53,10 +52,10 @@ class App {
 
     // CORS configuration
     this.app.use(cors({
-      origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+      origin: env.ALLOWED_ORIGINS.split(','),
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization']
+      allowedHeaders: ['Content-Type', 'x-api-key']
     }));
 
     // Compression middleware
@@ -203,7 +202,7 @@ class App {
   }
 
   public async start(): Promise<void> {
-    const port = process.env.PORT || 3000;
+    const port = env.PORT;
 
     try {
       await new Promise<void>((resolve, reject) => {
