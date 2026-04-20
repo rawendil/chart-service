@@ -106,7 +106,7 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.error('❌ Invalid environment variables:');
+  console.error('Invalid environment variables:');
   for (const issue of parsed.error.issues) {
     console.error(`  ${issue.path.join('.')}: ${issue.message}`);
   }
@@ -296,6 +296,8 @@ Import `env.API_KEY` directly. Remove the `if (!expectedApiKey) return 500` bran
 
 Replace `process.env.REDIS_URL || 'redis://localhost:6379'` (line 11) with `env.REDIS_URL ?? 'redis://localhost:6379'`. The local fallback is acceptable here because Redis is optional and `env.REDIS_URL` is validated (empty/unset → `undefined`, otherwise valid URL).
 
+**Why the fallback lives here and not in the schema:** putting `.default('redis://localhost:6379')` in the Zod schema would mean `env.REDIS_URL` is *always* a string, which hides the "no Redis configured" signal from any future code that wants to check it. Keeping it `string | undefined` in the schema and defaulting only at the connection point preserves that distinction. The duplicated literal is accepted as a small cost.
+
 ### `src/services/chartGenerator.ts`
 
 Replace `process.env.CHROMIUM_PATH || '/usr/bin/chromium-browser'` (line 97) with `env.CHROMIUM_PATH` (default in schema already handles the fallback).
@@ -359,7 +361,7 @@ The project has no automated tests and this spec does not add any. Verification 
 | 3. `validation.ts` rewritten | `tsc --noEmit` green; negative curl: `POST /api/charts/generate` with missing `chartType` → 400 with `details[].field = "chartType"`; positive curl → 201 |
 | 4. `types/api.ts` inferred | `tsc --noEmit` green (main test — TS catches any drift) |
 | 5. `database.ts` without fallbacks | App starts with valid env; without `DB_PASSWORD` exits 1 with env error |
-| 6. JWT cleanup | (bash) `grep -rE -i "(jwt\|jsonwebtoken\|bcrypt\|bearer)" src/ .env.example podman-compose.yml kubernetes/ README.md` → no matches |
+| 6. JWT cleanup | (bash) `grep -rEi "(jwt|jsonwebtoken|bcrypt|bearer)" src/ .env.example podman-compose.yml kubernetes/ README.md` → no matches |
 | 6b. `process.env` centralised | `grep -r "process\.env\." src/` → only matches in `src/config/env.ts` |
 | 7. README fixed | Sections *Authentication* and *Chart Usage Examples* reviewed |
 | 8. Final smoke test | `podman-compose down && podman-compose up -d --build` — all 3 services healthy; `/api/health/detailed` → 200; `POST /api/charts/generate` with valid `API_KEY` → 201; returned URLs (`/png`, `/embed`, `/json`) resolve |
