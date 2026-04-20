@@ -6,7 +6,7 @@
 
 **Architecture:** Single-pass sequenced cleanup. Create `src/config/env.ts` as the sole consumer of `process.env`; all other modules import the typed `env` object. Replace Joi with Zod in `src/middleware/validation.ts`, preserving the public HTTP API contract and the 400 error shape. Remove `bcryptjs`/`jsonwebtoken`/`joi` dependencies and all references across source, manifests, and docs.
 
-**Tech Stack:** Node.js 18+, TypeScript 5.3, Express 4, Zod 3, Postgres (`pg`), Redis (optional), Puppeteer, Podman/Docker.
+**Tech Stack:** Node.js 18+, TypeScript 5.3, Express 4, Zod 3, Postgres (`pg`), Redis (optional), Puppeteer, Docker.
 
 **Spec reference:** [docs/superpowers/specs/2026-04-20-cleanup-jwt-and-zod-migration-design.md](../specs/2026-04-20-cleanup-jwt-and-zod-migration-design.md)
 
@@ -42,7 +42,7 @@ src/
 
 [ROOT]
 ├── package.json          [EDITED: +zod, -joi, -jsonwebtoken, -bcryptjs, -@types/jsonwebtoken, -@types/bcryptjs]
-├── podman-compose.yml    [EDITED: -JWT_*, +API_KEY]
+├── docker-compose.yml    [EDITED: -JWT_*, +API_KEY]
 ├── kubernetes/deployment.yml  [EDITED: -JWT_*, +API_KEY]
 ├── README.md             [EDITED: Bearer → x-api-key]
 └── .env.example          [EDITED: -BCRYPT_ROUNDS]
@@ -909,7 +909,7 @@ Expected: output contains ONLY matches inside `src/config/env.ts`.
 - [ ] **Step 15.7: Smoke test — app starts**
 
 **Prerequisites:**
-1. Postgres and Redis must be running locally. If not: `podman-compose up -d postgres redis`.
+1. Postgres and Redis must be running locally. If not: `docker-compose up -d postgres redis`.
 2. `.env` must be populated with all required vars (see `.env.example`). `API_KEY` must be ≥ 16 characters.
 
 Run:
@@ -934,7 +934,7 @@ git commit -m "Migrate index.ts to typed env; drop dotenv.config(); fix CORS all
 
 ## Chunk 4: Dead-code/config cleanup and final verification
 
-**Goal of this chunk:** Remove `bcryptjs`, `jsonwebtoken`, and their `@types/*` from deps. Clean up manifest files (`podman-compose.yml`, `kubernetes/deployment.yml`), documentation (`README.md`). Run the full Definition-of-Done checklist.
+**Goal of this chunk:** Remove `bcryptjs`, `jsonwebtoken`, and their `@types/*` from deps. Clean up manifest files (`docker-compose.yml`, `kubernetes/deployment.yml`), documentation (`README.md`). Run the full Definition-of-Done checklist.
 
 ### Task 16: Remove `bcryptjs`, `jsonwebtoken`, and `@types/*`
 
@@ -981,10 +981,10 @@ git commit -m "Remove bcryptjs and jsonwebtoken (dead deps after JWT→API-key m
 
 ---
 
-### Task 17: Clean up `podman-compose.yml`
+### Task 17: Clean up `docker-compose.yml`
 
 **Files:**
-- Modify: `podman-compose.yml`
+- Modify: `docker-compose.yml`
 
 - [ ] **Step 17.1: Edit the `app` service `environment:` block**
 
@@ -1006,20 +1006,20 @@ Locate the `app:` service's `environment:` map. Make these changes:
 
 Run:
 ```bash
-grep -iE "jwt|bearer|bcrypt" podman-compose.yml
+grep -iE "jwt|bearer|bcrypt" docker-compose.yml
 ```
 Expected: no output.
 
 ```bash
-grep "API_KEY" podman-compose.yml
+grep "API_KEY" docker-compose.yml
 ```
 Expected: one line, value length ≥ 16 chars (after the colon/space).
 
 - [ ] **Step 17.3: Commit**
 
 ```bash
-git add podman-compose.yml
-git commit -m "Replace JWT_SECRET/JWT_EXPIRES_IN with API_KEY in podman-compose"
+git add docker-compose.yml
+git commit -m "Replace JWT_SECRET/JWT_EXPIRES_IN with API_KEY in docker-compose"
 ```
 
 ---
@@ -1158,7 +1158,7 @@ Expected: only matches inside `src/config/env.ts`.
 Run:
 ```bash
 grep -rEin "(jwt|jsonwebtoken|bcrypt|bearer)" \
-  src/ .env.example podman-compose.yml kubernetes/ README.md
+  src/ .env.example docker-compose.yml kubernetes/ README.md
 ```
 Expected: no output. (The `docs/superpowers/` tree is NOT scanned — those docs are allowed to reference JWT historically.)
 
@@ -1212,10 +1212,10 @@ Expected output shows `'x-api-key'` and does NOT contain `'Authorization'`.
 
 Run:
 ```bash
-podman-compose down
-podman-compose up -d --build
+docker-compose down
+docker-compose up -d --build
 sleep 15
-podman ps --format "table {{.Names}} {{.Status}}"
+docker ps --format "table {{.Names}} {{.Status}}"
 ```
 Expected: all three services show `Up` (and `healthy` if the image reports health).
 
@@ -1224,7 +1224,7 @@ Expected: all three services show `Up` (and `healthy` if the image reports healt
 Read the `API_KEY` value from the running compose config. With that key:
 
 ```bash
-API_KEY=$(grep "API_KEY:" podman-compose.yml | head -1 | awk -F': ' '{print $2}')
+API_KEY=$(grep "API_KEY:" docker-compose.yml | head -1 | awk -F': ' '{print $2}')
 
 curl -si -X POST http://localhost:3000/api/charts/generate \
   -H "Content-Type: application/json" \
@@ -1252,7 +1252,7 @@ Expected: HTTP 400 + JSON body matching `{success: false, error: "Body validatio
 - [ ] **Step 20.11: Teardown**
 
 ```bash
-podman-compose down
+docker-compose down
 ```
 
 - [ ] **Step 20.12: Final commit (if anything was touched during verification)**
