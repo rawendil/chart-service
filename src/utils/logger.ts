@@ -12,7 +12,7 @@ export class Logger {
         winston.format.errors({ stack: true }),
         winston.format.json()
       ),
-      defaultMeta: { service: 'chart-service' },
+      defaultMeta: { service: 'rawchart-service' },
       transports: [
         new winston.transports.File({
           filename: 'logs/error.log',
