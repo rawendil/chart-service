@@ -8,7 +8,7 @@ export const chartTypeSchema = z.enum([
   'line', 'bar', 'pie', 'doughnut', 'radar', 'polarArea', 'scatter', 'bubble', 'mixed',
 ]);
 
-export const themeSchema = z.enum(['light', 'dark', 'custom']).default('light');
+export const themeSchema = z.enum(['light', 'dark']).default('light');
 
 export const datasetSchema = z.object({
   label: z.string(),

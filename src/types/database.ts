@@ -27,7 +27,7 @@ export type ChartType =
   | 'bubble'
   | 'mixed';
 
-export type Theme = 'light' | 'dark' | 'custom';
+export type Theme = 'light' | 'dark';
 
 export type AccessType = 'view' | 'embed' | 'png' | 'json';
 

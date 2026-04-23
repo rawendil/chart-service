@@ -73,6 +73,49 @@ Full endpoint reference, authentication details, and more examples: [docs/api.md
 - Local setup without Docker, scripts, and project layout: [docs/development.md](./docs/development.md)
 - Interactive API explorer: <http://localhost:3000/api/docs>
 
+## Themes
+
+Charts support two built-in themes: `light` (default) and `dark`. Pass the `theme` field when generating a chart:
+
+```bash
+curl -X POST http://localhost:3000/api/charts/generate \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: $API_KEY" \
+  -d '{
+    "title": "Sales Report",
+    "chartType": "bar",
+    "theme": "dark",
+    "data": { "labels": ["Jan", "Feb"], "datasets": [{ "label": "Sales", "data": [100, 200] }] }
+  }'
+```
+
+### Adding a custom theme
+
+To add a new theme (e.g. `"brand"`):
+
+1. **Extend the type** in [src/types/database.ts](./src/types/database.ts):
+   ```ts
+   export type Theme = 'light' | 'dark' | 'brand';
+   ```
+
+2. **Add the color palette** in [src/services/chartGenerator.ts](./src/services/chartGenerator.ts) inside `colorPalettes`:
+   ```ts
+   brand: {
+     line: ['#your', '#colors', '#here', ...],
+     bar: [...],
+     // repeat for: pie, doughnut, radar, polarArea, scatter, bubble, mixed
+   }
+   ```
+
+3. **Wire up background/text/grid colors** in the same file (`getScaleOptions` and the `backgroundColor` logic around line 61).
+
+4. **Update the validation schema** in [src/middleware/validation.ts](./src/middleware/validation.ts):
+   ```ts
+   export const themeSchema = z.enum(['light', 'dark', 'brand']).default('light');
+   ```
+
+5. **Update the Swagger enum** in [src/config/swagger.ts](./src/config/swagger.ts).
+
 ## Embed
 
 Charts without a `shareToken` (public) can be embedded directly as an iframe:

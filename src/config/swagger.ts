@@ -129,7 +129,7 @@ const swaggerDefinition = {
           },
           theme: {
             type: 'string',
-            enum: ['light', 'dark', 'custom'],
+            enum: ['light', 'dark'],
             example: 'light',
           },
           shareToken: {
