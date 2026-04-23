@@ -95,6 +95,31 @@ describe('generateChartSchema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it('odrzuca nieznany chartType', () => {
+    const result = generateChartSchema.safeParse({ ...validMinimalPayload, chartType: 'invalid' });
+    expect(result.success).toBe(false);
+  });
+
+  it('odrzuca nieznany theme', () => {
+    const result = generateChartSchema.safeParse({ ...validMinimalPayload, theme: 'neon' });
+    expect(result.success).toBe(false);
+  });
+
+  it('akceptuje width dokładnie 100 i 4000 (graniczne)', () => {
+    expect(generateChartSchema.safeParse({ ...validMinimalPayload, width: 100 }).success).toBe(true);
+    expect(generateChartSchema.safeParse({ ...validMinimalPayload, width: 4000 }).success).toBe(true);
+  });
+
+  it('odrzuca height < 100', () => {
+    const result = generateChartSchema.safeParse({ ...validMinimalPayload, height: 50 });
+    expect(result.success).toBe(false);
+  });
+
+  it('odrzuca height > 4000', () => {
+    const result = generateChartSchema.safeParse({ ...validMinimalPayload, height: 5000 });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe('updateChartSchema', () => {

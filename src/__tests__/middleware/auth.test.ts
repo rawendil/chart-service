@@ -44,6 +44,17 @@ describe('authenticateApiKey', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
+  it('zwraca 401 gdy pusty string jako x-api-key', async () => {
+    const req = mockReq('');
+    const res = mockRes();
+    const next = jest.fn() as unknown as NextFunction;
+
+    await authenticateApiKey(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(next).not.toHaveBeenCalled();
+  });
+
   it('wywołuje next() dla poprawnego klucza API', async () => {
     const req = mockReq('test-api-key-1234567890');
     const res = mockRes();

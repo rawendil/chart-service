@@ -83,4 +83,9 @@ describe('renderEmbedPage', () => {
     const html = renderEmbedPage({ ...baseChart, title: null });
     expect(html).toContain('<title>Chart</title>');
   });
+
+  it('motyw custom traktuje jak light (jasne tło)', () => {
+    const html = renderEmbedPage({ ...baseChart, theme: 'custom' });
+    expect(html).toContain('background: #ffffff');
+  });
 });

@@ -83,4 +83,18 @@ describe('errorHandler', () => {
     const call = (res.json as jest.Mock).mock.calls[0][0];
     expect(call).not.toHaveProperty('stack');
   });
+
+  it('używa "Server Error" gdy brak message', () => {
+    const err: AppError = Object.assign(new Error(), { message: '' });
+    const res = mockRes();
+
+    errorHandler(err, mockReq(), res, jest.fn() as unknown as NextFunction);
+
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        error: 'Server Error',
+      })
+    );
+  });
 });
