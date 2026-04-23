@@ -1,6 +1,12 @@
 # Superpowers (local-only planning docs)
 docs/superpowers/
 
+# Git worktrees
+.worktrees/
+
+# Blog articles (managed outside the repo)
+blog/
+
 # Dependencies
 node_modules/
 npm-debug.log*
