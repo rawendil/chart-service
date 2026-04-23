@@ -25,26 +25,3 @@ export const rateLimitMiddleware = rateLimit({
     });
   }
 });
-
-// Stricter rate limiting for chart generation
-export const chartGenerationRateLimit = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 10, // limit each IP to 10 chart generations per minute
-  message: {
-    success: false,
-    error: 'Too many chart generation requests, please slow down.'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res) => {
-    logger.warn('Chart generation rate limit exceeded', {
-      ip: req.ip,
-      url: req.originalUrl,
-      method: req.method
-    });
-    res.status(429).json({
-      success: false,
-      error: 'Too many chart generation requests, please slow down.'
-    });
-  }
-});
