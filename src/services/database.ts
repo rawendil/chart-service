@@ -85,10 +85,6 @@ export class DatabaseService {
     this.logger.info('Database tables created/verified');
   }
 
-  getPool(): Pool {
-    return this.pool;
-  }
-
   async query(text: string, params?: any[]): Promise<any> {
     const start = Date.now();
     try {
