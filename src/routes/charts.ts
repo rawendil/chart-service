@@ -233,7 +233,7 @@ router.get('/:hash', async (req: Request, res: Response): Promise<void> => {
     const query = `
       SELECT id, chart_hash, title, description, chart_type, width, height, theme, is_public, expires_at, created_at, updated_at
       FROM charts
-      WHERE chart_hash = $1 AND (is_public = true OR expires_at > NOW())
+      WHERE chart_hash = $1 AND (is_public = true AND (expires_at IS NULL OR expires_at > NOW()))
     `;
 
     const result = await databaseService.query(query, [hash]);
@@ -330,9 +330,9 @@ router.get('/:hash/png', async (req: Request, res: Response): Promise<void> => {
 
     // Get chart data from database
     const query = `
-      SELECT chart_data, chart_type, width, height, theme, title
+      SELECT id, chart_data, chart_type, width, height, theme, title
       FROM charts
-      WHERE chart_hash = $1 AND (is_public = true OR expires_at > NOW())
+      WHERE chart_hash = $1 AND (is_public = true AND (expires_at IS NULL OR expires_at > NOW()))
     `;
 
     const result = await databaseService.query(query, [hash]);
@@ -389,9 +389,9 @@ router.get('/:hash/embed', async (req: Request, res: Response): Promise<void> =>
 
     // Get chart data from database
     const query = `
-      SELECT chart_data, chart_type, width, height, theme, title, description
+      SELECT id, chart_data, chart_type, width, height, theme, title, description
       FROM charts
-      WHERE chart_hash = $1 AND (is_public = true OR expires_at > NOW())
+      WHERE chart_hash = $1 AND (is_public = true AND (expires_at IS NULL OR expires_at > NOW()))
     `;
 
     const result = await databaseService.query(query, [hash]);
@@ -498,9 +498,9 @@ router.get('/:hash/json', async (req: Request, res: Response): Promise<void> => 
 
     // Get chart data from database
     const query = `
-      SELECT chart_data, chart_type, title, description
+      SELECT id, chart_data, chart_type, title, description
       FROM charts
-      WHERE chart_hash = $1 AND (is_public = true OR expires_at > NOW())
+      WHERE chart_hash = $1 AND (is_public = true AND (expires_at IS NULL OR expires_at > NOW()))
     `;
 
     const result = await databaseService.query(query, [hash]);
