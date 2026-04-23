@@ -1,16 +1,6 @@
 # Build stage
 FROM node:18-alpine AS builder
 
-# Install dumb-init for proper signal handling and Chrome for Puppeteer
-RUN apk add --no-cache dumb-init \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont
-
 # Set working directory
 WORKDIR /app
 
@@ -18,6 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install all dependencies (including devDependencies for build)
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN npm ci
 
 # Copy source code
