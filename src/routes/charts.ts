@@ -7,7 +7,7 @@ import { authenticateApiKey } from '../middleware/auth';
 import { Logger } from '../utils/logger';
 import { GenerateChartRequest, UpdateChartRequest, ApiResponse, ChartResponse } from '../types/api';
 import { Chart } from '../types/database';
-import { validateBody, validateParams, generateChartSchema, updateChartSchema } from '../middleware/validation';
+import { validateBody, generateChartSchema, updateChartSchema } from '../middleware/validation';
 import { renderEmbedPage } from '../views/embedPage';
 
 const router = Router();

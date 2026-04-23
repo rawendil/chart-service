@@ -117,5 +117,3 @@ function validate(source: Source, schema: ZodType) {
 }
 
 export const validateBody = (schema: ZodType) => validate('body', schema);
-export const validateParams = (schema: ZodType) => validate('params', schema);
-export const validateQuery = (schema: ZodType) => validate('query', schema);
