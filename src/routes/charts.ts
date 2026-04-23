@@ -602,9 +602,10 @@ router.get('/:hash/json', async (req: Request, res: Response): Promise<void> => 
  *                 type: string
  *                 enum: [light, dark]
  *                 example: "dark"
- *               is_public:
- *                 type: boolean
- *                 example: true
+ *               shareToken:
+ *                 type: string
+ *                 nullable: true
+ *                 example: "my-service-token"
  *               expires_at:
  *                 type: string
  *                 format: date-time

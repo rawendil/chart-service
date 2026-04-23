@@ -75,10 +75,16 @@ Full endpoint reference, authentication details, and more examples: [docs/api.md
 
 ## Embed
 
-Any public chart can be embedded as an iframe:
+Charts without a `shareToken` (public) can be embedded directly as an iframe:
 
 ```html
 <iframe src="http://localhost:3000/api/charts/{hash}/embed" width="800" height="600" frameborder="0"></iframe>
+```
+
+For charts with a `shareToken`, append it as a query parameter:
+
+```html
+<iframe src="http://localhost:3000/api/charts/{hash}/embed?token={shareToken}" width="800" height="600" frameborder="0"></iframe>
 ```
 
 The embed endpoint serves a self-contained HTML page (no external dependencies) with its own Content-Security-Policy header, safe for use in third-party sites.
