@@ -18,13 +18,13 @@ Set the key in `.env` as `API_KEY`. Minimum 16 characters recommended.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `POST` | `/api/charts/generate` | yes | Generate and store a new chart |
-| `GET` | `/api/charts/:hash` | no | Chart metadata (JSON) |
-| `GET` | `/api/charts/:hash/png` | no | Chart as PNG image |
-| `GET` | `/api/charts/:hash/embed` | no | Embeddable HTML snippet |
-| `GET` | `/api/charts/:hash/json` | no | Full chart data as JSON |
-| `PUT` | `/api/charts/:hash` | yes | Update chart |
-| `DELETE` | `/api/charts/:hash` | yes | Delete chart |
+| `POST` | `/api/charts/generate` | `x-api-key` | Generate and store a new chart |
+| `GET` | `/api/charts/:hash` | none / `?token=` | Chart metadata — token required if chart has shareToken |
+| `GET` | `/api/charts/:hash/png` | none / `?token=` | Chart as PNG image |
+| `GET` | `/api/charts/:hash/embed` | none / `?token=` | Embeddable HTML snippet |
+| `GET` | `/api/charts/:hash/json` | none / `?token=` | Full chart data as JSON |
+| `PUT` | `/api/charts/:hash` | `x-api-key` | Update chart |
+| `DELETE` | `/api/charts/:hash` | `x-api-key` | Delete chart |
 
 ### Health
 
@@ -38,35 +38,51 @@ Set the key in `.env` as `API_KEY`. Minimum 16 characters recommended.
 ### Generate a chart
 
 ```bash
+# Public chart (no token required to access)
 curl -X POST http://localhost:3000/api/charts/generate \
   -H "Content-Type: application/json" \
   -H "x-api-key: $API_KEY" \
   -d '{
     "title": "Sales Report",
-    "description": "Monthly sales data",
     "chartType": "bar",
     "data": {
       "labels": ["Jan", "Feb", "Mar"],
-      "datasets": [{
-        "label": "Sales",
-        "data": [100, 200, 150]
-      }]
+      "datasets": [{ "label": "Sales", "data": [100, 200, 150] }]
     },
     "width": 800,
     "height": 600,
-    "theme": "light",
-    "isPublic": true
+    "theme": "light"
+  }'
+
+# Private chart (shareToken required to access)
+curl -X POST http://localhost:3000/api/charts/generate \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: $API_KEY" \
+  -d '{
+    "title": "Sales Report",
+    "chartType": "bar",
+    "shareToken": "my-service-token",
+    "data": {
+      "labels": ["Jan", "Feb", "Mar"],
+      "datasets": [{ "label": "Sales", "data": [100, 200, 150] }]
+    }
   }'
 ```
 
 ### Access a chart
 
 ```bash
-# Metadata
+# Public chart — no token needed
 curl http://localhost:3000/api/charts/{chart-hash}
 
-# PNG
-curl http://localhost:3000/api/charts/{chart-hash}/png --output chart.png
+# Private chart — pass shareToken as query param
+curl "http://localhost:3000/api/charts/{chart-hash}?token=my-service-token"
+
+# Admin access via x-api-key — works for any chart regardless of shareToken
+curl http://localhost:3000/api/charts/{chart-hash} -H "x-api-key: $API_KEY"
+
+# PNG (with token)
+curl "http://localhost:3000/api/charts/{chart-hash}/png?token=my-service-token" --output chart.png
 
 # Embed HTML
 curl http://localhost:3000/api/charts/{chart-hash}/embed
