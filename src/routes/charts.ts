@@ -9,6 +9,7 @@ import { GenerateChartRequest, UpdateChartRequest, ApiResponse, ChartResponse } 
 import { Chart } from '../types/database';
 import { validateBody, generateChartSchema, updateChartSchema } from '../middleware/validation';
 import { renderEmbedPage } from '../views/embedPage';
+import { env } from '../config/env';
 
 const router = Router();
 const logger = new Logger();
@@ -25,6 +26,13 @@ const getServices = (req: Request) => {
 // Generate a hash for chart ID
 function generateChartHash(): string {
   return crypto.randomBytes(16).toString('hex');
+}
+
+function checkAccess(shareToken: string | null, req: Request): boolean {
+  if (shareToken === null) return true;
+  if (req.header('x-api-key') === env.API_KEY) return true;
+  const provided = (req.query.token as string | undefined) || req.header('x-share-token');
+  return provided === shareToken;
 }
 
 // POST /api/charts/generate - Generate new chart (authenticated)
@@ -90,7 +98,7 @@ router.post('/generate', authenticateApiKey, validateBody(generateChartSchema), 
        width: requestData.width || 800,
        height: requestData.height || 600,
        theme: requestData.theme || 'light',
-       is_public: requestData.isPublic || false,
+       share_token: requestData.shareToken ?? null,
        expires_at: requestData.expiresAt ? new Date(requestData.expiresAt) : null
      };
 
@@ -117,15 +125,15 @@ router.post('/generate', authenticateApiKey, validateBody(generateChartSchema), 
        width: chartData.width,
        height: chartData.height,
        theme: chartData.theme,
-       is_public: chartData.is_public,
+       share_token: chartData.share_token,
        expires_at: chartData.expires_at
      };
 
     // Insert chart record
     const query = `
-      INSERT INTO charts (chart_hash, title, description, chart_type, chart_config, chart_data, width, height, theme, is_public, expires_at)
+      INSERT INTO charts (chart_hash, title, description, chart_type, chart_config, chart_data, width, height, theme, share_token, expires_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      RETURNING id, chart_hash, title, description, chart_type, width, height, theme, is_public, expires_at, created_at, updated_at
+      RETURNING id, chart_hash, title, description, chart_type, width, height, theme, share_token, expires_at, created_at, updated_at
     `;
 
     const result = await databaseService.query(query, [
@@ -138,7 +146,7 @@ router.post('/generate', authenticateApiKey, validateBody(generateChartSchema), 
       chartRecord.width,
       chartRecord.height,
       chartRecord.theme,
-      chartRecord.is_public,
+      chartRecord.share_token,
       chartRecord.expires_at
     ]);
 
@@ -154,7 +162,7 @@ router.post('/generate', authenticateApiKey, validateBody(generateChartSchema), 
       width: chart.width,
       height: chart.height,
       theme: chart.theme,
-      is_public: chart.is_public,
+      share_token: chart.share_token,
       expires_at: chart.expires_at,
       created_at: chart.created_at,
       updated_at: chart.updated_at,
@@ -231,9 +239,9 @@ router.get('/:hash', async (req: Request, res: Response): Promise<void> => {
 
     // Get chart from database
     const query = `
-      SELECT id, chart_hash, title, description, chart_type, width, height, theme, is_public, expires_at, created_at, updated_at
+      SELECT id, chart_hash, title, description, chart_type, width, height, theme, share_token, expires_at, created_at, updated_at
       FROM charts
-      WHERE chart_hash = $1 AND (is_public = true AND (expires_at IS NULL OR expires_at > NOW()))
+      WHERE chart_hash = $1 AND (expires_at IS NULL OR expires_at > NOW())
     `;
 
     const result = await databaseService.query(query, [hash]);
@@ -247,6 +255,12 @@ router.get('/:hash', async (req: Request, res: Response): Promise<void> => {
     }
 
     const chart = result.rows[0];
+
+    if (!checkAccess(chart.share_token, req)) {
+      res.status(403).json({ success: false, error: 'Invalid or missing share token' } as ApiResponse);
+      return;
+    }
+
     const baseUrl = `${req.protocol}://${req.get('host')}`;
 
     // Log access
@@ -264,7 +278,7 @@ router.get('/:hash', async (req: Request, res: Response): Promise<void> => {
       width: chart.width,
       height: chart.height,
       theme: chart.theme,
-      is_public: chart.is_public,
+      share_token: chart.share_token,
       expires_at: chart.expires_at,
       created_at: chart.created_at,
       updated_at: chart.updated_at,
@@ -330,9 +344,9 @@ router.get('/:hash/png', async (req: Request, res: Response): Promise<void> => {
 
     // Get chart data from database
     const query = `
-      SELECT id, chart_data, chart_type, width, height, theme, title
+      SELECT id, chart_data, chart_type, width, height, theme, title, share_token
       FROM charts
-      WHERE chart_hash = $1 AND (is_public = true AND (expires_at IS NULL OR expires_at > NOW()))
+      WHERE chart_hash = $1 AND (expires_at IS NULL OR expires_at > NOW())
     `;
 
     const result = await databaseService.query(query, [hash]);
@@ -346,6 +360,11 @@ router.get('/:hash/png', async (req: Request, res: Response): Promise<void> => {
     }
 
     const chart = result.rows[0];
+
+    if (!checkAccess(chart.share_token, req)) {
+      res.status(403).json({ success: false, error: 'Invalid or missing share token' } as ApiResponse);
+      return;
+    }
 
     // Generate PNG using chart generator
     const pngBuffer = await chartGenerator.generateChart(
@@ -389,9 +408,9 @@ router.get('/:hash/embed', async (req: Request, res: Response): Promise<void> =>
 
     // Get chart data from database
     const query = `
-      SELECT id, chart_data, chart_type, width, height, theme, title, description
+      SELECT id, chart_data, chart_type, width, height, theme, title, description, share_token
       FROM charts
-      WHERE chart_hash = $1 AND (is_public = true AND (expires_at IS NULL OR expires_at > NOW()))
+      WHERE chart_hash = $1 AND (expires_at IS NULL OR expires_at > NOW())
     `;
 
     const result = await databaseService.query(query, [hash]);
@@ -405,6 +424,11 @@ router.get('/:hash/embed', async (req: Request, res: Response): Promise<void> =>
     }
 
     const chart = result.rows[0];
+
+    if (!checkAccess(chart.share_token, req)) {
+      res.status(403).json({ success: false, error: 'Invalid or missing share token' } as ApiResponse);
+      return;
+    }
 
     // Log access
     await databaseService.query(
@@ -498,9 +522,9 @@ router.get('/:hash/json', async (req: Request, res: Response): Promise<void> => 
 
     // Get chart data from database
     const query = `
-      SELECT id, chart_data, chart_type, title, description
+      SELECT id, chart_data, chart_type, title, description, share_token
       FROM charts
-      WHERE chart_hash = $1 AND (is_public = true AND (expires_at IS NULL OR expires_at > NOW()))
+      WHERE chart_hash = $1 AND (expires_at IS NULL OR expires_at > NOW())
     `;
 
     const result = await databaseService.query(query, [hash]);
@@ -514,6 +538,11 @@ router.get('/:hash/json', async (req: Request, res: Response): Promise<void> => 
     }
 
     const chart = result.rows[0];
+
+    if (!checkAccess(chart.share_token, req)) {
+      res.status(403).json({ success: false, error: 'Invalid or missing share token' } as ApiResponse);
+      return;
+    }
 
     // Log access
     await databaseService.query(
@@ -634,7 +663,7 @@ router.put('/:hash', authenticateApiKey, validateBody(updateChartSchema), async 
       width: requestData.width,
       height: requestData.height,
       theme: requestData.theme,
-      is_public: requestData.isPublic,
+      share_token: requestData.shareToken,
       expires_at: requestData.expiresAt
     };
 
@@ -697,9 +726,9 @@ router.put('/:hash', authenticateApiKey, validateBody(updateChartSchema), async 
       paramCount++;
     }
 
-    if (updateData.is_public !== undefined) {
-      updateFields.push(`is_public = $${paramCount}`);
-      updateValues.push(updateData.is_public);
+    if (updateData.share_token !== undefined) {
+      updateFields.push(`share_token = $${paramCount}`);
+      updateValues.push(updateData.share_token);
       paramCount++;
     }
 
@@ -718,7 +747,7 @@ router.put('/:hash', authenticateApiKey, validateBody(updateChartSchema), async 
       UPDATE charts
       SET ${updateFields.join(', ')}
       WHERE chart_hash = $${paramCount}
-      RETURNING id, chart_hash, title, description, chart_type, width, height, theme, is_public, expires_at, created_at, updated_at
+      RETURNING id, chart_hash, title, description, chart_type, width, height, theme, share_token, expires_at, created_at, updated_at
     `;
 
     const result = await databaseService.query(updateQuery, updateValues);
@@ -735,7 +764,7 @@ router.put('/:hash', authenticateApiKey, validateBody(updateChartSchema), async 
       width: chart.width,
       height: chart.height,
       theme: chart.theme,
-      is_public: chart.is_public,
+      share_token: chart.share_token,
       expires_at: chart.expires_at,
       created_at: chart.created_at,
       updated_at: chart.updated_at,

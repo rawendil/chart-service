@@ -26,7 +26,7 @@ export interface ChartResponse {
   width: number;
   height: number;
   theme: Theme;
-  is_public: boolean;
+  share_token: string | null;
   expires_at?: string;
   created_at: string;
   updated_at: string;

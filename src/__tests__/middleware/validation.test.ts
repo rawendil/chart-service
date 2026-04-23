@@ -34,14 +34,14 @@ describe('generateChartSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('stosuje domyślne wartości width=800, height=600, theme=light, isPublic=false', () => {
+  it('stosuje domyślne wartości width=800, height=600, theme=light, shareToken=null', () => {
     const result = generateChartSchema.safeParse(validMinimalPayload);
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.width).toBe(800);
       expect(result.data.height).toBe(600);
       expect(result.data.theme).toBe('light');
-      expect(result.data.isPublic).toBe(false);
+      expect(result.data.shareToken).toBe(null);
     }
   });
 
@@ -53,7 +53,7 @@ describe('generateChartSchema', () => {
       width: 1200,
       height: 900,
       theme: 'dark',
-      isPublic: true,
+      shareToken: 'my-service-token',
       expiresAt: new Date(Date.now() + 86400000).toISOString(),
     };
     const result = generateChartSchema.safeParse(full);

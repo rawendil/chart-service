@@ -10,7 +10,7 @@ export interface Chart {
   width: number;
   height: number;
   theme: Theme;
-  is_public: boolean;
+  share_token: string | null;
   expires_at?: Date;
   created_at: Date;
   updated_at: Date;

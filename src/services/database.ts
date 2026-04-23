@@ -54,7 +54,7 @@ export class DatabaseService {
         width INTEGER DEFAULT 800,
         height INTEGER DEFAULT 600,
         theme VARCHAR(50) DEFAULT 'light',
-        is_public BOOLEAN DEFAULT false,
+        share_token VARCHAR(255) DEFAULT NULL,
         expires_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -70,12 +70,13 @@ export class DatabaseService {
         accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
       `,
-      `
-      CREATE INDEX IF NOT EXISTS idx_charts_hash ON charts(chart_hash);
-      CREATE INDEX IF NOT EXISTS idx_charts_public ON charts(is_public) WHERE is_public = true;
-      CREATE INDEX IF NOT EXISTS idx_access_logs_chart ON chart_access_logs(chart_id);
-      CREATE INDEX IF NOT EXISTS idx_access_logs_date ON chart_access_logs(accessed_at);
-      `
+      `ALTER TABLE charts ADD COLUMN IF NOT EXISTS share_token VARCHAR(255) DEFAULT NULL`,
+      `ALTER TABLE charts DROP COLUMN IF EXISTS is_public`,
+      `DROP INDEX IF EXISTS idx_charts_public`,
+      `CREATE INDEX IF NOT EXISTS idx_charts_hash ON charts(chart_hash)`,
+      `CREATE INDEX IF NOT EXISTS idx_charts_share_token ON charts(share_token) WHERE share_token IS NOT NULL`,
+      `CREATE INDEX IF NOT EXISTS idx_access_logs_chart ON chart_access_logs(chart_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_access_logs_date ON chart_access_logs(accessed_at)`
     ];
 
     for (const query of queries) {

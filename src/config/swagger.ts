@@ -132,9 +132,11 @@ const swaggerDefinition = {
             enum: ['light', 'dark', 'custom'],
             example: 'light',
           },
-          isPublic: {
-            type: 'boolean',
-            example: false,
+          shareToken: {
+            type: 'string',
+            nullable: true,
+            example: null,
+            description: 'If set, access to this chart requires this token. If null, the chart is public.',
           },
           expiresAt: {
             type: 'string',
@@ -190,9 +192,10 @@ const swaggerDefinition = {
                 enum: ['light', 'dark'],
                 example: 'light',
               },
-              is_public: {
-                type: 'boolean',
-                example: false,
+              share_token: {
+                type: 'string',
+                nullable: true,
+                example: null,
               },
               expires_at: {
                 type: 'string',

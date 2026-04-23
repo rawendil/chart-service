@@ -61,7 +61,7 @@ export const generateChartSchema = z.object({
   width: z.number().int().min(100).max(4000).default(800),
   height: z.number().int().min(100).max(4000).default(600),
   theme: themeSchema,
-  isPublic: z.boolean().default(false),
+  shareToken: z.string().nullable().optional().default(null),
   expiresAt: z
     .coerce.date()
     .refine((d) => d > new Date(), 'expiresAt must be in the future')
@@ -77,7 +77,7 @@ export const updateChartSchema = z
     width: z.number().int().min(100).max(4000).optional(),
     height: z.number().int().min(100).max(4000).optional(),
     theme: themeSchema.optional(),
-    isPublic: z.boolean().optional(),
+    shareToken: z.string().nullable().optional(),
     expiresAt: z
       .coerce.date()
       .refine((d) => d > new Date(), 'expiresAt must be in the future')
