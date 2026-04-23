@@ -1,3 +1,6 @@
+# Superpowers (local-only planning docs)
+docs/superpowers/
+
 # Dependencies
 node_modules/
 npm-debug.log*
