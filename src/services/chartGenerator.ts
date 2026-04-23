@@ -5,6 +5,8 @@ import { ChartType as CustomChartType, Theme } from '../types/database';
 import { RedisService } from './redis';
 import { env } from '../config/env';
 import * as crypto from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class ChartGeneratorService {
   private logger: Logger;
@@ -14,6 +16,11 @@ export class ChartGeneratorService {
     this.logger = new Logger();
     this.redisService = redisService || new RedisService();
     this.logger.info('Chart generator service initialized');
+  }
+
+  private getChartJsScript(): string {
+    const chartJsPath = path.join(__dirname, '../public/js/chart.js');
+    return fs.readFileSync(chartJsPath, 'utf-8');
   }
 
   private generateCacheKey(
@@ -315,7 +322,7 @@ export class ChartGeneratorService {
       <head>
         <meta charset="UTF-8">
         <title>Chart Generation</title>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.js"></script>
+        <script>${this.getChartJsScript()}</script>
         <style>
           body {
             margin: 0;
