@@ -1,10 +1,4 @@
-// Chart embedding functionality
-// This script reads chart inputs from the DOM emitted by renderEmbedPage:
-//   - JSON payload from <script type="application/json" id="chart-payload">
-//   - chart type from [data-chart-type] on .chart-container
-//   - theme from [data-chart-theme] on .chart-container
-// Window globals (window.chartData / chartType / chartTheme) are kept as a
-// fallback only for pages served by older cached server code.
+// Reads chart inputs from DOM: #chart-payload JSON, [data-chart-type], [data-chart-theme]
 
 (function() {
   'use strict';
@@ -15,21 +9,19 @@
     return;
   }
 
-  // Prefer DOM-sourced inputs (new, safe). Fall back to window globals so
-  // the page keeps working during the rollout.
   const payloadEl = document.getElementById('chart-payload');
   const container = document.querySelector('.chart-container');
 
   let chartData;
   try {
-    chartData = payloadEl ? JSON.parse(payloadEl.textContent) : window.chartData;
+    chartData = JSON.parse(payloadEl.textContent);
   } catch (e) {
     console.error('Failed to parse chart payload', e);
     return;
   }
 
-  const chartType = (container && container.dataset.chartType) || window.chartType;
-  const theme = (container && container.dataset.chartTheme) || window.chartTheme;
+  const chartType = container && container.dataset.chartType;
+  const theme = container && container.dataset.chartTheme;
 
   if (!chartData || !chartType) {
     console.error('Chart data or type not provided');
